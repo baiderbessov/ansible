@@ -1,0 +1,8 @@
+- hosts: all
+  become: true
+  roles:
+    - add_disk
+    - add_repo_file
+    - epel
+    - docker
+    - ssh-keys

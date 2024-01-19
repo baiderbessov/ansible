@@ -1,0 +1,6 @@
+*.tar.gz
+files/*
+ansible.cfg
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store
