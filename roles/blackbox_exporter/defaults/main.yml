@@ -1,0 +1,12 @@
+blackbox_exporter_version: 0.24.0
+blackbox_exporter_architecture: amd64
+blackbox_exporter_config_dir: /etc/blackbox_exporter
+blackbox_exporter_base_dir: /opt/blackbox_exporter
+blackbox_exporter_unzip_dir: "{{ blackbox_exporter_base_dir }}/blackbox_exporter-{{ blackbox_exporter_version }}.linux-{{ blackbox_exporter_architecture }}"
+blackbox_exporter_baseurl: "https://github.com/prometheus/blackbox_exporter/releases/download"
+blackbox_exporter_download_url: "{{ blackbox_exporter_baseurl }}/v{{ blackbox_exporter_version }}/blackbox_exporter-{{ blackbox_exporter_version }}.linux-{{ blackbox_exporter_architecture }}.tar.gz"
+blackbox_exporter_zip_path: "{{ blackbox_exporter_unzip_dir }}.tar.gz"
+blackbox_exporter_user: blackbox_exporter
+blackbox_exporter_group: blackbox_exporter
+blackbox_exporter_web_listen_address: "0.0.0.0"
+blackbox_exporter_port: "19002"

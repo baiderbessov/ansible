@@ -1,0 +1,73 @@
+- name: Check if partition already exists
+  stat:
+    path: "{{ device_path }}1"
+  failed_when: false
+  changed_when: false
+  register: partition_status
+
+- name: Disk not partitioned
+  set_fact:
+    new_partition: "{{ not partition_status.stat.exists }}"
+
+- name: Check disk label
+  parted:
+    device: "{{ device_path }}"
+    number: 1
+  register: disk_info
+
+- name: Change disk label to GPT
+  parted:
+    device: "{{ device_path }}"
+    label: gpt
+  when: disk_info.disk.table != "gpt"
+
+- name: Create partition
+  parted:
+    device: "{{ device_path }}"
+    number: 1
+    state: present
+    part_end: "100%"
+  when: new_partition
+
+- name: Create volume group
+  lvg:
+    vg: "{{ vg_name }}"
+    pvs: "{{ device_path }}1"
+    pvresize: true
+  when: new_partition
+
+- name: Create logical volume
+  lvol:
+    vg: "{{ vg_name }}"
+    lv: "{{ lv_name }}"
+    size: 100%VG
+    force: true
+  when: new_partition
+
+- name: Create filesystem on mounted disk
+  community.general.filesystem:
+    fstype: "{{ fs_type }}"
+    dev: "/dev/{{ vg_name }}/{{ lv_name }}"
+    resizefs: yes
+  when: new_partition
+
+- name: Add disk to /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    line: "/dev/{{ vg_name }}/{{ lv_name }} {{ mount_path }} {{ fs_type }} defaults 1 2"
+  when: new_partition
+
+- name: Check if volume mounted
+  command: "mountpoint -q {{ mount_path }}"
+  failed_when: false
+  changed_when: false
+  register: mount_status
+
+- name: Mount the volume
+  mount:
+    path: "{{ mount_path }}"
+    src: "/dev/{{ vg_name }}/{{ lv_name }}"
+    fstype: "{{ fs_type }}"
+    opts: "defaults"
+    state: mounted
+  when: mount_status.rc != 0

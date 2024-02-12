@@ -1,0 +1,16 @@
+---
+# defaults file for postgres-exporter
+postgres_exporter_port: 19014
+prometheus_postgres_version: 0.14.0
+
+prometheus_postgres_dbname: postgres
+prometheus_postgres_data_source_name: "user=postgres dbname=\
+  {{ prometheus_postgres_dbname }} host=/var/run/postgresql/ sslmode=disable"
+
+prometheus_postgres_query_filenames:
+  - queries-default.yml
+
+go_arch_map: amd64
+go_arch: amd64
+prometheus_postgres_system_user: postgres
+prometheus_postgres_query_directory: files/

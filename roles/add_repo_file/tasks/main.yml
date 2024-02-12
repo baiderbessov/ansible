@@ -1,0 +1,13 @@
+---
+- name: Remove all files in the directory /etc/yum.repos.d/
+  become: true
+  command: rm -f /etc/yum.repos.d/*.repo
+
+- name: Create nexus.repo file
+  command: touch /etc/yum.repos.d/nexus.repo
+
+- name: Add to /etc/yum.repos.d/nexus.repo
+  blockinfile:
+    path: /etc/yum.repos.d/nexus.repo
+    block: "{{ lookup('template', 'nexus.repo.j2') }}"
+    mode: "0644"

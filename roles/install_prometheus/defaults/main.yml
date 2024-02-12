@@ -1,0 +1,9 @@
+prometheus_version: 2.48.0
+prometheus_downloads_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+prometheus_user: prometheus
+prometheus_group: prometheus
+prometheus_install_dir: /usr/local/bin
+prometheus_data_dir: /var/lib/prometheus
+prometheus_config_dir: /etc/prometheus
+
+host_url: # hostname

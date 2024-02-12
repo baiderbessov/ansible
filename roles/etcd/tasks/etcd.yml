@@ -1,0 +1,71 @@
+---
+# tasks file for etcd
+- name: Create etcd group
+  ansible.builtin.group:
+    name: "{{ ETCD_USER_GROUP }}"
+    system: yes
+    state: present
+
+- name: Create etcd user and associate with group
+  ansible.builtin.user:
+    name: "{{ ETCD_USER_GROUP }}"
+    group: "{{ ETCD_USER_GROUP }}"
+    system: yes
+    shell: /bin/bash
+    home: "{{ ETCD_DATA }}"
+    create_home: yes
+
+- name: Download etcd tarball
+  ansible.builtin.get_url:
+    url: "{{ ETCD_URL }}"
+    dest: /tmp/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz
+    mode: '0660'    
+  tags:
+    - download
+
+- name: Unzip etcd tarball
+  unarchive:
+    src: /tmp/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz
+    dest: '/tmp'
+    remote_src: true
+    owner: etcd
+    group: etcd
+
+- name: copy binaries for etcd
+  copy:
+    src: "/tmp/etcd-{{ ETCD_VER }}-linux-amd64/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    remote_src: true
+    owner: etcd
+    group: etcd
+    mode: "0755"    
+  with_items:
+    - etcd
+    - etcdctl
+
+- name: create etcd data directory 
+  file:
+    path: "{{ ETCD_DATA }}"
+    state: directory
+    owner: "{{ ETCD_USER_GROUP }}"
+    group: "{{ ETCD_USER_GROUP }}"
+    mode: '0744'
+
+- name: Configure systemd service for etcd
+  template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+
+- name: copy template etcd
+  template:
+    src: etcd.j2
+    dest: /etc/etcd
+
+- name: Ensure etcd service is enabled and started
+  systemd:
+    name: etcd
+    state: started
+    daemon_reload: yes
+    enabled: yes
+
+

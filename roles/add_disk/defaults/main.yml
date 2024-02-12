@@ -1,0 +1,5 @@
+device_path: /dev/vdb #### CHANGE HERE
+mount_path: /data
+fs_type: "ext4"
+vg_name: "datavg"
+lv_name: "datalv"

@@ -1,0 +1,13 @@
+
+# - name: find working ssh port
+#   tags: find-ssh-port
+#   ansible.builtin.import_tasks: find-ssh-port.yml
+
+- name: change the ssh port
+  tags: change-ssh
+  ansible.builtin.import_tasks: change-port.yml
+  when: change_sshd_port != 22
+
+- name: ensure connection working
+  ansible.builtin.import_tasks: ensure-port-working.yml
+  when: change_sshd_port != 22

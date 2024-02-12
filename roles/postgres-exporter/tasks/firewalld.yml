@@ -1,0 +1,6 @@
+- name: permit traffic in public zone on port {{ postgres_exporter_port }}/tcp
+  ansible.posix.firewalld:
+    port: '{{ postgres_exporter_port }}/tcp'
+    permanent: true
+    state: enabled
+    immediate: true

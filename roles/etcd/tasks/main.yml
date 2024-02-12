@@ -1,0 +1,5 @@
+- import_tasks: firewalld.yml
+  tags: ['etcd_firewalld']
+
+- import_tasks: etcd.yml
+  tags: ['etcd']

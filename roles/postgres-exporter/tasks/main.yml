@@ -1,0 +1,10 @@
+---
+# tasks file for postgres-exporter
+- import_tasks: firewalld.yml
+  tags: ['postgres-exporter']
+
+- import_tasks: create_user.yml
+  tags: ['postgres-exporter']
+
+- import_tasks: install.yml
+  tags: ['postgres-exporter']

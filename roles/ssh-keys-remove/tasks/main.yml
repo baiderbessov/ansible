@@ -1,0 +1,19 @@
+- name: Ensure name.surname has sudo privileges
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^name\.surname'
+    line: "name.surname ALL=(ALL) NOPASSWD:ALL"
+    validate: "visudo -cf %s"
+
+- name: Determine action for the user name.surname (create or delete)
+  ansible.builtin.user:
+    name: name.surname
+    state: absent
+    remove: yes
+
+- name: Remove name.surname from sudoers if deleted
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: absent
+    regexp: '^almas\.kassymkhan'

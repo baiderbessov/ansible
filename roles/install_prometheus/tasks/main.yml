@@ -1,0 +1,87 @@
+---
+- name: Create Prometheus user
+  user:
+    name: "{{ prometheus_user }}"
+    shell: /bin/false
+    create_home: no
+
+- name: Download Prometheus
+  get_url:
+    url: "{{ prometheus_downloads_url }}"
+    dest: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+
+- name: Extract Prometheus tarball
+  unarchive:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+    creates: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64"
+
+- name: Move binaries
+  command: mv /tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus {{ prometheus_install_dir }}
+  args:
+    creates: "{{ prometheus_install_dir }}/prometheus"
+
+- name: Move promtool
+  command: mv /tmp/prometheus-{{ prometheus_version }}.linux-amd64/promtool {{ prometheus_install_dir }}
+  args:
+    creates: "{{ prometheus_install_dir }}/promtool"
+
+- name: Set ownership of Prometheus binaries
+  file:
+    path: "{{ item }}"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+  loop:
+    - "{{ prometheus_install_dir }}/prometheus"
+    - "{{ prometheus_install_dir }}/promtool"
+
+- name: Create directories for Prometheus
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+  loop:
+    - "{{ prometheus_data_dir }}"
+    - "{{ prometheus_config_dir }}"
+
+- name: Move configuration files
+  copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    dest: "{{ prometheus_config_dir }}/{{ item }}"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    remote_src: yes
+  loop:
+    - "prometheus.yml"
+    - "consoles"
+    - "console_libraries"
+
+- name: Create systemd service file for Prometheus
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+
+- name: Define SELinux file context for Prometheus binary
+  sefcontext:
+    target: "/usr/local/bin/prometheus(/.*)?"
+    setype: bin_t
+    state: present
+
+- name: Apply new SELinux file context to existing files
+  command: restorecon -vF /usr/local/bin/prometheus
+
+- name: Configure Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+
+- name: Enable and start Prometheus service
+  systemd:
+    name: prometheus
+    enabled: yes
+    state: started
+    daemon_reload: yes

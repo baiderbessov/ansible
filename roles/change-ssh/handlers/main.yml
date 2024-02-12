@@ -1,0 +1,14 @@
+---
+# handlers file for change-sshd-port
+
+- name: restart sshd
+  become: true
+  service:
+    name: sshd
+    state: restarted
+
+- name: restart firewalld
+  systemd:
+    name: firewalld
+    enabled: true
+    state: restarted

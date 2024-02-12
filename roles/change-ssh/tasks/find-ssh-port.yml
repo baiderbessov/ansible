@@ -1,0 +1,41 @@
+---
+- name: Check if we're using the inventory-provided SSH port
+  ignore_errors: True
+  ignore_unreachable: True
+  vars:
+    ansible_port: "{{ change_sshd_port }}"
+  ansible.builtin.setup:
+  register: working_port
+
+
+- name: SSH port is configured properly
+  tags: change-ssh
+  ansible.builtin.set_fact:
+    ansible_port: "{{ change_sshd_port }}"
+  register: ssh_port_set
+  when: working_port is reachable and working_port is succeeded
+
+
+- name: Check if we're using the default SSH port
+  vars:
+    ansible_port: "22"
+  ansible.builtin.setup:
+  ignore_errors: True
+  ignore_unreachable: True
+  register: change_sshd_port_default_ssh
+  when: working_port is unreachable or working_port is failed
+
+
+- name: Set inventory ansible_port to default
+  tags: change-ssh
+  ansible.builtin.set_fact:
+    ansible_port: "22"
+  when: (working_port is unreachable or working_port is failed) and change_sshd_port_default_ssh is succeeded
+  register: ssh_port_set
+
+
+- name: Fail if SSH port was not auto-detected (unknown)
+  tags: change-ssh
+  ansible.builtin.fail:
+    msg: "The SSH port is neither 22 or {{ ansible_port }}."
+  when: ssh_port_set is undefined

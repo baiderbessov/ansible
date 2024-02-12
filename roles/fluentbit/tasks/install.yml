@@ -1,0 +1,49 @@
+---
+# - name: Download fluent-bit.repo file to yum.repos.d
+#   copy:
+#     src: "fluent-bit.repo"
+#     dest: "/etc/yum.repos.d"
+#     mode: "0644"
+
+# - name: Copy a fluent-bit rpm key file to /tmp
+#   copy:
+#     src: fluentbit.key
+#     dest: /tmp/fluentbit.key
+#     owner: root
+#     group: root
+#     mode: "0600"
+
+# - rpm_key:
+#     state: present
+#     key: /tmp/fluentbit.key
+
+# - name: install fluentbit
+#   dnf:
+#     name: fluent-bit
+#     state: present
+- name: Copy rpm file to server
+  copy:
+    src: fluent-bit-2.2.0-1.x86_64.rpm
+    dest: /tmp/fluent-bit-2.2.0-1.x86_64.rpm
+
+- name: Install fluent-bit
+  dnf:
+    name: /tmp/fluent-bit-2.2.0-1.x86_64.rpm
+    disable_gpg_check: true
+    state: present
+
+- name: Start and enable fluent-bit
+  systemd:
+    state: started
+    name: fluent-bit
+    enabled: yes
+
+- name: Copy a file to /etc/fluent-bit
+  template:
+    src: fluent-bit.conf.j2
+    dest: /etc/fluent-bit/fluent-bit.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - fluent-bit restart

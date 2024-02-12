@@ -1,0 +1,12 @@
+---
+- name: Install OpenJDK {{ JAVA_VERSION }}
+  yum:
+    name: 'java-{{ JAVA_VERSION }}-openjdk'
+    state: present
+
+- name: Istall OpenJDK {{ JAVA_VERSION }} devel
+  yum: 
+    name: 'java-{{ JAVA_VERSION }}-openjdk-devel'
+    state: present
+  when: JAVA_DEVEL
+    

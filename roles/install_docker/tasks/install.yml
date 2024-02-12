@@ -1,0 +1,52 @@
+---
+- name: delete Containerd
+  package:
+    name: containerd
+    state: absent
+
+- name: Ensure old versions of Docker are removed
+  yum:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - docker
+    - docker-client
+    - docker-client-latest
+    - docker-common
+    - docker-latest
+    - docker-latest-logrotate
+    - docker-logrotate
+    - docker-engine
+
+- name: Add Docker repository
+  command: dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: Install Docker
+  dnf:
+    name: docker-ce, docker-ce-cli, containerd.io, docker-compose-plugin
+    state: present
+
+- name: Ensure Docker service is started and enabled at boot
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create Docker data directory
+  file:
+    path: /data/docker
+    state: directory
+    mode: "0755"
+
+- name: Update daemon.json with custom data directory
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Restart Docker service
+  service:
+    name: docker
+    state: restarted

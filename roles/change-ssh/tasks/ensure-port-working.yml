@@ -1,0 +1,9 @@
+- name: Ensure we use the configured SSH port for the remainder of the role
+  tags: change-ssh
+  ansible.builtin.set_fact:
+    ansible_port: "{{ change_sshd_port }}"
+
+
+- name: Run deferred setup to gather facts
+  tags: change-ssh
+  ansible.builtin.setup:

@@ -1,0 +1,10 @@
+- name: Open TCP port 2379, 2380 
+  firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: true
+  with_items: 
+    - 2379/tcp
+    - 2380/tcp

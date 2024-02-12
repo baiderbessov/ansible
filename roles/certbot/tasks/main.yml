@@ -1,0 +1,35 @@
+# tasks/main.yml
+---
+- name: Install Certbot
+  package:
+    name: "{{ certbot_package }}"
+    state: present
+
+- name: Install Certbot Cloudflare DNS plugin
+  package:
+    name: "{{ certbot_cloudflare_package }}"
+    state: present
+
+- name: Create Cloudflare credentials directory
+  file:
+    path: "{{ certbot_cloudflare_credentials_directory }}"
+    state: directory
+    mode: "0700"
+
+- name: Create Cloudflare credentials file
+  copy:
+    content: |
+      dns_cloudflare_api_token = {{certbot_token}}
+    dest: "{{ certbot_cloudflare_credentials_directory }}/{{ certbot_cloudflare_credentials_file }}"
+    owner: root
+    group: root
+    mode: "0400"
+
+- name: Request SSL certificate using Certbot with Cloudflare DNS-01 challenge
+  command: >
+    certbot certonly --dns-cloudflare
+    --dns-cloudflare-credentials {{ certbot_cloudflare_credentials_directory }}/{{ certbot_cloudflare_credentials_file }}
+    -d {{ certbot_domain }}
+    -m {{ certbot_email }}
+    --agree-tos
+    --non-interactive

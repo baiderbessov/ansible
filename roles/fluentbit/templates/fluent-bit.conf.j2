@@ -1,0 +1,49 @@
+[SERVICE]
+    flush        5
+    daemon       Off
+    log_level    info
+    parsers_file parsers.conf
+    plugins_file plugins.conf
+    storage.metrics on
+    http_server  On
+    http_listen  0.0.0.0
+    http_port    19045
+
+{% if FLUENT_BIT_PATH_LOGS is defined %}
+[INPUT]
+    name tail
+    path {{ FLUENT_BIT_PATH_LOGS }}
+    path_key file_name
+    tag {{ FLUENT_BIT_TAG }}
+    {% if FLUENT_BIT_PARSER is defined -%}
+    parser {{ FLUENT_BIT_PARSER }}
+    {% endif -%}
+{% endif %}
+
+[INPUT]
+    name tail
+    path /var/log/messages
+    path_key file_name
+    parser syslog-rfc3164-local
+    tag system
+
+[INPUT]
+    name tail
+    path /var/log/secure
+    path_key file_name
+    parser syslog-rfc3164-local
+    tag secure
+
+[INPUT]
+    name tail
+    path /var/log/audit/audit.log
+    path_key file_name
+    tag audit
+
+[OUTPUT]
+    name kafka
+    format json
+    match *
+    brokers {{ FLUENT_BIT_KAFKA_BROKERS }}
+    topics {{ FLUENT_BIT_TOPIC_NAME }}
+    retry_limit 10

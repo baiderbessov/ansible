@@ -1,0 +1,41 @@
+---
+- name: Confirm host connection works
+  ansible.builtin.ping:
+
+- name: populate service facts
+  ansible.builtin.service_facts:
+
+- name: Set the firewall to allow the new SSH port
+  become: true
+  ansible.posix.firewalld:
+    port: "{{ change_sshd_port }}/tcp"
+    zone: public
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: Setup alternate SSH port
+  become: true
+  ansible.builtin.lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^Port"
+    line: "Port {{ change_sshd_port }}"
+  notify: "restart sshd"
+
+- name: collect only selected facts
+  ansible.builtin.setup:
+    filter:
+      - 'ansible_distribution'
+      - 'ansible_distribution_major_version'
+
+- name: setup selinux for alternate ssh port (<=7)
+  become: true
+  community.general.seport:
+    ports: "{{ change_sshd_port }}"
+    proto: "tcp"
+    setype: "ssh_port_t"
+    state: "present"
+
+
+- name: Ensure SSH is reloaded if need be
+  ansible.builtin.meta: flush_handlers

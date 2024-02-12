@@ -1,0 +1,11 @@
+---
+# defaults file for extend-rootvg
+
+new_device_path: "/dev/vdc" # Device path variable
+partition_path: "{{ new_device_path }}1"
+volume_group: "rootvg" # Volume group name variable
+mount_path_rootvg: ""
+logical_volume: "rootlv" # Logical volume name variable
+lv_size: "20G" # Size to extend the logical volume
+mount_path_rootvg2: "var"
+logical_volume2: "varlv"

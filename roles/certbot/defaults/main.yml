@@ -1,0 +1,9 @@
+# defaults/main.yml
+
+certbot_package: "certbot"
+certbot_cloudflare_package: "python3-certbot-dns-cloudflare.noarch"
+certbot_cloudflare_credentials_directory: "/etc/letsencrypt/cloudflare"
+certbot_cloudflare_credentials_file: "credentials.ini"
+certbot_domain: "{{domain}}" #### CHANGE HERE
+certbot_email: "{{email}}" #### CHANGE HERE
+certbot_token: "" ###token

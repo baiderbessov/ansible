@@ -1,0 +1,63 @@
+---
+- name: Create blackbox group
+  group:
+    name: "{{ blackbox_exporter_user }}"
+    state: present
+
+- name: Create blackbox user
+  user:
+    name: "{{ blackbox_exporter_user }}"
+    group: "{{ blackbox_exporter_group }}"
+    createhome: false
+    shell: /bin/false
+
+- name: Create blackbox_exporter conf and data directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ blackbox_exporter_user }}"
+    group: "{{ blackbox_exporter_group }}"
+    mode: 0770
+  with_items:
+    - "{{ blackbox_exporter_base_dir }}"
+    - "{{ blackbox_exporter_config_dir }}"
+
+- name: Download blackbox_exporter zip
+  get_url:
+    url: "{{ blackbox_exporter_download_url }}"
+    dest: "{{ blackbox_exporter_zip_path }}"
+
+- name: Unzip blackbox_exporter bins
+  unarchive:
+    copy: false
+    src: "{{ blackbox_exporter_zip_path }}"
+    dest: "{{ blackbox_exporter_base_dir }}"
+    creates: "{{ blackbox_exporter_unzip_dir }}"
+    owner: "{{ blackbox_exporter_user }}"
+    group: "{{ blackbox_exporter_group }}"
+    mode: 0755
+
+- name: Create systemd service unit
+  template:
+    src: blackbox_exporter.service.j2
+    dest: /etc/systemd/system/blackbox_exporter.service
+    owner: root
+    group: root
+    mode: 0755
+  notify:
+    - Restart blackbox_exporter
+
+- name: Deploy main blackbox_exporter config
+  template:
+    src: blackbox_exporter.yml.j2
+    dest: "{{ blackbox_exporter_config_dir }}/blackbox_exporter.yml"
+    owner: "{{ blackbox_exporter_user }}"
+    group: "{{ blackbox_exporter_group }}"
+  notify:
+    - Reload blackbox_exporter
+
+- name: Start blackbox_exporter
+  systemd:
+    name: blackbox_exporter
+    state: started
+    enabled: true

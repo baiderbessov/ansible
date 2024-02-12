@@ -1,0 +1,33 @@
+###############################################################
+#    OOO    OO    OO  OOOOOO  OOOO OOOOOOOO  OO       OOOOOOOO
+#   OO OO   OOO   OO OO    OO  OO  OO     OO OO       OO
+#  OO   OO  OOOO  OO OO        OO  OO     OO OO       OO
+# OO     OO OO OO OO  OOOOOO   OO  OOOOOOOO  OO       OOOOOO
+# OOOOOOOOO OO  OOOO       OO  OO  OO     OO OO       OO
+# OO     OO OO   OOO OO    OO  OO  OO     OO OO       OO
+# OO     OO OO    OO  OOOOOO  OOOO OOOOOOOO  OOOOOOOO OOOOOOOO
+###############################################################
+
+
+modules:
+  https_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      method: GET
+      preferred_ip_protocol: ip4
+      valid_status_codes: [200]
+      no_follow_redirects: true
+      fail_if_not_ssl: true
+
+  https_post_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      method: POST
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+  icmp:
+    prober: icmp
+    timeout: 5s

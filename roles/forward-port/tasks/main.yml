@@ -1,0 +1,54 @@
+---
+- name: Allow {{ source_redirect_port }} port traffic
+  become: true
+  firewalld:
+    port: "{{ source_redirect_port }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: Forward port {{ source_redirect_port }} to another host {{ destination_port }}. PREROUTING
+  ansible.builtin.iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: eth0
+    protocol: tcp
+    match: tcp
+    destination_port: "{{ source_redirect_port }}"
+    jump: DNAT
+    to_destination: "{{ lookup('community.general.dig', '{{ destination_host }}' )}}:{{ destination_port }}"
+    comment: Redirect {{ source_redirect_port }} port traffic to another hostport {{ destination_port }}
+  become: true
+
+- name: Forward port {{ source_redirect_port }} to another host {{ destination_port }}. POSTROUTING
+  ansible.builtin.iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: eth0
+    protocol: tcp
+    match: tcp
+    destination_port: "{{ destination_port }}"
+    jump: SNAT
+    to_source: "{{ lookup('community.general.dig', '{{ (ansible_ssh_host | default(ansible_host)) | default(inventory_hostname) }}') }}"
+    comment: Redirect ssh traffic to port {{ destination_port }}
+  become: true
+
+- name: set ipv4 forward
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Install the iptables-services
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - iptables-services
+    state: latest
+
+- name: Make Iptable Rules Persistant
+  become: true
+  ansible.builtin.shell: iptables-save > /etc/sysconfig/iptables

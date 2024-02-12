@@ -1,0 +1,6 @@
+---
+- name: Add hosts to /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    block: "{{ lookup('template', 'hosts_template.j2') }}"
+  become: true

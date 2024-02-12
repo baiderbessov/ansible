@@ -1,8 +1,13 @@
 - hosts: all
   become: true
   roles:
-    - add_disk
-    - add_repo_file
-    - epel
-    - docker
-    - ssh-keys
+    # - add_disk
+    # - add_repo_file
+    # - epel
+    # - docker
+    # - ssh-keys-add
+    # - change_line_in_file
+    # - postgres-task
+    # - blackbox_exporter
+    # - install_prometheus
+    - add_second_ssh_key

@@ -1,0 +1,4 @@
+---
+# defaults file for find-ssh-port
+default_port: 22
+alternative_port: 22000

@@ -1,0 +1,21 @@
+- name: Ensure the user name.surname is present
+  ansible.builtin.user:
+    name: name.surname
+    groups: users,admin
+    append: yes
+    shell: /bin/bash
+    create_home: yes
+
+- name: Add SSH public key for the user
+  ansible.builtin.authorized_key:
+    user: name.surname
+    state: present
+    key: "SSH-key"
+
+- name: Ensure name.surname has sudo privileges
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^name\.surname'
+    line: "name.surname ALL=(ALL) NOPASSWD:ALL"
+    validate: "visudo -cf %s"

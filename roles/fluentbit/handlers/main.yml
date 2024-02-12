@@ -1,0 +1,6 @@
+---
+# handlers file for fluent-bit
+- name: fluent-bit restart
+  service:
+    name: fluent-bit
+    state: restarted    

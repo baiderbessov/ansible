@@ -1,0 +1,9 @@
+---
+# tasks file for extend-rootvg
+- name: Check if partition exists
+  ansible.builtin.stat:
+    path: "{{ new_device_path }}"
+  register: device_check
+
+- import_tasks: extend-rootvg.yml
+  when: device_check.stat.exists

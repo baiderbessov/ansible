@@ -1,0 +1,42 @@
+---
+- name: Check if partition exists
+  ansible.builtin.stat:
+    path: "{{ partition_path }}"
+  failed_when: false
+  changed_when: false
+  register: partition_check
+
+- name: Disk not partitioned
+  set_fact:
+    new_partition: "{{ not partition_check.stat.exists }}"
+
+- name: Create a new primary partition
+  community.general.parted:
+    device: "{{ new_device_path }}"
+    number: 1
+    state: present
+    part_end: 100%
+  when: new_partition
+  register: partition_creation
+
+- name: Create a Physical Volume and Extend Volume Group
+  community.general.lvg:
+    vg: "{{ volume_group }}"
+    pvs: "/dev/vda3,{{ partition_path }}"
+    state: present
+    pvresize: true
+  when: partition_creation.changed
+
+- name: Extend Logical Volume
+  community.general.lvol:
+    vg: "{{ volume_group }}"
+    lv: "{{ logical_volume }}"
+    size: "{{ lv_size }}"
+    force: true
+    state: present
+  when: partition_creation.changed
+
+- name: Resize XFS filesystem on /{{ mount_path_rootvg }}
+  ansible.builtin.command:
+    cmd: xfs_growfs /{{ mount_path_rootvg }}
+  when: partition_creation.changed

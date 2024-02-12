@@ -1,0 +1,5 @@
+- name: Replace with_trivy=$false with with_trivy=true in install.sh
+  ansible.builtin.lineinfile:
+    path: /data/harbor/install.sh
+    regexp: '^with_trivy=\$false'
+    line: "with_trivy=true"
